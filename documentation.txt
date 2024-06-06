@@ -1,0 +1,93 @@
+Terraform Part :-
+
+1. At first install "awscli" on your machine's terminal and the run "aws configure" and provide the access key, secret key and region.(you have to generate it on your AWS account IAM service)
+2. Then Install terraform on your machine and go to the directory where the whole terraform code is present.
+3. Then Run "terraform init" command to Initialize a working directory and downloads the necessary provider plugins and modules and setting up the backend for storing your infrastructure's state.
+4. Then Run "terraform plan" command, which creates an execution plan, which lets you preview the changes that Terraform plans to make to your infrastructure.
+5. Then Run "terraform validate" command to check the validation of your code.
+6. Then Run "terraform fmt" command to format your terraform code.
+7. Then Run "terraform apply --auto-approve" command to run the terraform code and then all the resources will be created on your aws account.
+8. This should the actual structure of your terraform code : 
+
+Terraform/
+│
+├── main.tf
+├── variables.tf
+├── outputs.tf
+│
+├── networking/
+│   ├── vpc.tf
+│   ├── subnets.tf
+│   ├── internet_gateway.tf
+│   └── route_tables.tf
+│
+├── security_groups/
+│   ├── bastion_sg.tf
+│   ├── alb_sg.tf
+│   └── private_sg.tf
+│
+├── load_balancer/
+│   ├── alb.tf
+│   ├── target_group.tf
+│   └── listener.tf
+│
+├── compute/
+│   ├── bastion_instance.tf
+│   ├── web_app_instance.tf
+│   ├── database_instance.tf
+│   └── user_data/
+│       ├── bastion_userdata.sh
+│       ├── web_app_userdata.sh
+│       └── database_userdata.sh
+│
+└── dns/
+    └── route53.tf
+
+
+Web-Application Part :-
+
+1. after creating web-app EC2 instance(Node Js already installed through terraform userdata), ssh into it through the bastion host using the pem key file and run the following commands -
+
+mkdir web-app
+cd web-app
+npm init -y
+touch app.js # copy the code for app.js from the index.js file inside the web-app folder of the repo
+npm install
+export DB_HOST="your_database_private_ip"
+export DB_PORT=5432
+export DB_NAME="your_db_name"
+export DB_USER="your_db_user"
+export DB_PASSWORD="your_db_password"
+node app.js
+
+2. now your node js application will be ruuning on port 3000, you can access it through the load balancer c_name
+
+
+Database Part :-
+
+1. after creating Database EC2 instance(PostgreSQL already installed through terraform userdata), ssh into it through the bastion host using the pem key file and run the following commands -
+
+sudo -i -u postgres psql -c "CREATE USER your_db_user WITH PASSWORD 'your_db_password';"
+sudo -i -u postgres psql -c "CREATE DATABASE your_db_name OWNER your_db_user;"
+
+2. This will create a Database User and Password, after that it creates a database, which will store data coming from your web-app (you have to pass the database private ip, username, password and db_name to the above web-app commands )
+
+3. To see the data coming from the web-app you can use the following commands (after ssh through the bastion host into the db_instance)- 
+
+sudo -i -u postgres psql # Connect to PostgreSQL 
+\c your_db_name;  # Connect to your database
+SELECT * FROM table_name; # Replace with your actual table name
+
+
+
+
+
+
+
+
+
+
+
+
+
+
